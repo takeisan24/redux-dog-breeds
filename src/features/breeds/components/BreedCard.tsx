@@ -28,12 +28,10 @@ export function BreedCard({ breed }: BreedCardProps) {
           </Typography>
           <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
             {breed.groupName && <Chip size="small" label={breed.groupName} />}
-            <Chip
-              size="small"
-              variant="outlined"
-              color={breed.isHypoallergenic ? 'success' : 'default'}
-              label={breed.isHypoallergenic ? 'Hypoallergenic' : 'Not hypoallergenic'}
-            />
+            {/* Most breeds are not hypoallergenic: a "Not…" chip on almost every card is noise */}
+            {breed.isHypoallergenic && (
+              <Chip size="small" variant="outlined" color="success" label="Hypoallergenic" />
+            )}
           </Stack>
         </Box>
 

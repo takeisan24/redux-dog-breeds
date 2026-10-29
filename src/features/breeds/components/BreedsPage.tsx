@@ -112,11 +112,7 @@ export function BreedsPage() {
             </Alert>
           )}
           {pagination && (
-            <BreedsSummary
-              breedCount={breeds.length}
-              pagination={pagination}
-              lastSuccessAt={lastSuccessAt}
-            />
+            <BreedsSummary breedCount={breeds.length} pagination={pagination} />
           )}
           <BreedGrid breeds={breeds} isDimmed={viewState === 'loadingWithData'} />
         </>

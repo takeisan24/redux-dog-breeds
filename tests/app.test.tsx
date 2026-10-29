@@ -35,11 +35,25 @@ describe('Requirement 1: online, call the API and show each breed', () => {
     expect(screen.getByRole('heading', { name: 'Akita' })).toBeInTheDocument()
     expect(screen.getByText(/Showing 1–2 of 283 breeds/)).toBeInTheDocument()
     expect(screen.getAllByText('14–16 years')).toHaveLength(2)
-    expect(screen.getAllByRole('link', { name: 'Jane Doe' })[0]).toHaveAttribute(
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/breeds?page%5Bnumber%5D=1')
+    // All is well, so no connection chip in the header
+    expect(screen.queryByText('Online')).not.toBeInTheDocument()
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument()
+  })
+
+  it('credits the photo author once the photo has loaded (no credit over an empty frame)', async () => {
+    mockFetchSuccess(createBreedsResponse({ names: ['Affenpinscher'] }))
+    renderWithProviders(<App />)
+    const photo = await screen.findByRole('img', { name: 'Affenpinscher dog' })
+
+    expect(screen.queryByRole('link', { name: 'Jane Doe' })).not.toBeInTheDocument()
+
+    fireEvent.load(photo)
+
+    expect(screen.getByRole('link', { name: 'Jane Doe' })).toHaveAttribute(
       'href',
       'https://commons.wikimedia.org/wiki/File:Example.jpg',
     )
-    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/breeds?page%5Bnumber%5D=1')
   })
 
   it('loads the page written in the URL (?page=2)', async () => {
@@ -133,19 +147,21 @@ describe('Requirement 2: disconnected, call the API again', () => {
     expect(await screen.findByText(/Showing 25–26 of 283 breeds/)).toBeInTheDocument()
   })
 
-  it('Wi-Fi off while the browser still says "online" (VPN / virtual adapters): the failed request marks the app Offline, a successful Retry marks it Online', async () => {
+  it('Wi-Fi off while the browser still says "online" (VPN / virtual adapters): the failed request shows the Offline chip, a successful Retry removes it', async () => {
     // navigator.onLine stays true and no offline/online events fire
     mockFetchNetworkFailure()
     const { user } = renderWithProviders(<App />)
 
     expect(await screen.findByRole('heading', { name: "Can't reach Dog API" })).toBeInTheDocument()
     expect(screen.getByText('Offline')).toBeInTheDocument()
+    // The message must not contradict the Offline chip ("If you are online…")
+    expect(screen.queryByText(/if you are online/i)).not.toBeInTheDocument()
 
     mockFetchSuccess(createBreedsResponse())
     await user.click(screen.getByRole('button', { name: 'Try again' }))
 
     expect(await screen.findByRole('heading', { name: 'Affenpinscher' })).toBeInTheDocument()
-    expect(screen.getByText('Online')).toBeInTheDocument()
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument()
   })
 
   it('retries automatically when the browser reports that the connection is back', async () => {
@@ -158,7 +174,7 @@ describe('Requirement 2: disconnected, call the API again', () => {
     goOnline()
 
     expect(await screen.findByRole('heading', { name: 'Affenpinscher' })).toBeInTheDocument()
-    expect(screen.getByText('Online')).toBeInTheDocument()
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument()
   })
 
   it('a photo that failed to load (offline) shows a placeholder and is requested again after the next successful load', async () => {

@@ -15,7 +15,7 @@ export interface BreedsState {
   requestedPage: number
   /** Only the latest request may update the state (protects against out-of-order responses). */
   currentRequestId: string | null
-  /** Time of the last successful load, shown as "Updated 10:32". */
+  /** Time of the last successful load, shown when a reload fails ("Showing breeds loaded at 10:32"). */
   lastSuccessAt: number | null
 }
 

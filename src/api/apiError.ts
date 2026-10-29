@@ -67,7 +67,8 @@ export function getApiErrorContent(error: ApiError): ApiErrorContent {
     case 'network':
       return {
         title: "Can't reach Dog API",
-        description: 'Check your Internet connection. If you are online, Dog API may be down.',
+        // The header shows "Offline" for this error too, so the text must not say "if you are online"
+        description: 'Check your Internet connection, then try again.',
       }
     case 'timeout':
       return {

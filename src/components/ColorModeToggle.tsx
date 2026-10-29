@@ -4,14 +4,14 @@ import Tooltip from '@mui/material/Tooltip'
 import { useColorScheme } from '@mui/material/styles'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
-import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness'
+import BrightnessAutoIcon from '@mui/icons-material/BrightnessAuto'
 
 type ColorMode = 'system' | 'light' | 'dark'
 
 const NEXT_MODE: Record<ColorMode, ColorMode> = { system: 'light', light: 'dark', dark: 'system' }
 const MODE_LABEL: Record<ColorMode, string> = { system: 'System', light: 'Light', dark: 'Dark' }
 const MODE_ICON: Record<ColorMode, ReactNode> = {
-  system: <SettingsBrightnessIcon />,
+  system: <BrightnessAutoIcon />,
   light: <LightModeIcon />,
   dark: <DarkModeIcon />,
 }

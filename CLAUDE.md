@@ -170,6 +170,7 @@ Two consequences of these rules:
 | 10 | Race condition / UX review of auto retry | No data races. A 10 s background retry made the warning flicker, so it was fixed, then **removed** in step 11 |
 | 11 | Final review for bloat | Auto-retry timer removed (option B), dead code removed, tests moved to `tests/` (3 files), this file shortened |
 | 12 | Review prep after the push | One UX edge found: "Try again" on a never-loaded page briefly showed the old page's cards. Fixed with one rule for loading and failed states, tests first (§4.3) |
+| 13 | UI / UX review (UI, usability, user journey, emotion) | Strong on errors and recovery, weak on discovery (no search, no detail view: left out of scope). Quick wins done: consistent offline text, less noise, sentence-case buttons (§4.3) |
 
 ### 4.2 Verified facts that shaped the design
 
@@ -199,6 +200,10 @@ Two consequences of these rules:
 | Chip stayed Online with Wi-Fi off (VPN adapters) | Listener: connection error → Offline, success → Online |
 | Dead code: `'aborted'` error kind (nothing aborts), HTTP 429 special case, 9 unneeded exports | Removed |
 | "Try again" on `?page=7` (never loaded) showed page 1's cards, dimmed, until the answer came. The "same page" check only applied to the failed state | One check (`hasRequestedPageData`) for loading and failed. States renamed `loadingNoData` / `loadingWithData` to match `errorNoData` / `errorWithData`. Pagination stays visible while loading |
+| Chip said "Offline" while the message said "If you are online, Dog API may be down" | The `network` text no longer contradicts the chip |
+| Photo credit shown over an empty frame while the photo was loading or failing | Credit appears after `onLoad` |
+| Noise: "Online" chip always shown, "Not hypoallergenic" on most cards, the load time shown twice | Chip only when offline (its `role="status"` box stays mounted so the change is announced), only the positive chip, time only in the warning |
+| Buttons in UPPERCASE (MUI default), unclear "System" theme icon | `textTransform: 'none'` in the theme, `BrightnessAuto` icon |
 
 ### 4.4 Tried and reverted
 

@@ -20,4 +20,6 @@ export const theme = createTheme({
     },
   },
   shape: { borderRadius: 12 },
+  // Sentence-case buttons ("Try again", not "TRY AGAIN") read calmer and less like the MUI default
+  typography: { button: { textTransform: 'none', fontWeight: 600 } },
 })

@@ -19,6 +19,9 @@ export function BreedImage({ photo, breedName }: BreedImageProps) {
   // API load (Retry / Reload) creates new photo objects, so the photo is tried again after it.
   const [failedPhoto, setFailedPhoto] = useState<BreedPhoto | null>(null)
   const hasError = photo !== null && failedPhoto === photo
+  // The credit waits for the photo: a credit over an empty frame looks broken
+  const [loadedPhoto, setLoadedPhoto] = useState<BreedPhoto | null>(null)
+  const isLoaded = photo !== null && loadedPhoto === photo
 
   if (!photo || hasError) {
     return (
@@ -46,10 +49,11 @@ export function BreedImage({ photo, breedName }: BreedImageProps) {
         alt={`${breedName} dog`}
         loading="lazy"
         decoding="async"
+        onLoad={() => setLoadedPhoto(photo)}
         onError={() => setFailedPhoto(photo)}
         sx={{ ...imageFrameSx, display: 'block', objectFit: 'cover', bgcolor: 'action.hover' }}
       />
-      {photo.author && (
+      {isLoaded && photo.author && (
         <Typography
           variant="caption"
           noWrap

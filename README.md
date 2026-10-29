@@ -44,7 +44,7 @@ npm run lint       # oxlint
 5. Reconnect, then click **Retry** (or wait: if the browser fires its `online` event, the app retries by itself). The breeds load again, and photos that failed are requested again.
 
 > **"I turned Wi-Fi off but the error says 'Can't reach Dog API', not 'You're offline'."** The browser only reports "offline" (`navigator.onLine === false`) when *every* network adapter is down. A VPN (Tailscale, Radmin, …), Hyper-V/WSL or VirtualBox adapter stays "connected" with Wi-Fi off, so the browser still says "online" and never fires its `offline` / `online` events. The app does not rely on those events alone:
-> - The chip switches to **Offline** as soon as a request fails to reach the server, and back to **Online** after the next successful one.
+> - The **Offline** chip appears as soon as a request fails to reach the server, and disappears after the next successful one.
 > - No `online` event arrives when Wi-Fi comes back, so click **Retry**.
 >
 > The message only differs because the browser cannot tell "no Internet" from "server down" in that case.
@@ -127,6 +127,7 @@ Read the tests from top to bottom of the stack: `api` → `redux` → `app`. `te
 - **Only the latest request updates the state.** Each `pending` stores its `requestId`, and late responses from older requests are ignored. This prevents a slow page-2 response from overwriting page 3.
 - **State outside Redux, on purpose.** The current page lives in the URL (`?page=2`) so it survives a refresh, can be shared, and works with Back / Forward. MUI manages the color mode preference itself.
 - **Page size 24.** It divides evenly into 1, 2, 3 and 4 columns, so grid rows are always full. The API omits `meta.pagination.last` on the last page, so the page count falls back to `ceil(records / pageSize)`.
+- **Quiet when all is well.** The header shows a chip only when the app is offline, cards only show the "Hypoallergenic" chip when it is true, and the photo credit appears once the photo has loaded. Every error message says the same thing as the chip.
 - **Image credits.** Most photos are CC BY / CC BY-SA, which require attribution, so each card credits the author and license.
 
 ## Development process
