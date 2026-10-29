@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { App } from '@/App'
 import { createBreedsResponse } from './support/fixtures'
 import {
+  mockFetchDeferred,
   mockFetchNetworkFailure,
   mockFetchSuccess,
   renderWithProviders,
@@ -109,6 +110,27 @@ describe('Requirement 2: disconnected, call the API again', () => {
     expect(screen.getByRole('button', { name: 'Back to page 1' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Affenpinscher' })).not.toBeInTheDocument()
     expect(window.location.search).toBe('?page=2')
+  })
+
+  it('"Try again" on a page that was never loaded: skeleton while loading, the old page never comes back', async () => {
+    mockFetchSuccess(createBreedsResponse())
+    const { user } = renderWithProviders(<App />)
+    await screen.findByRole('heading', { name: 'Affenpinscher' })
+
+    goOffline()
+    mockFetchNetworkFailure()
+    await user.click(screen.getByRole('button', { name: 'Go to page 2' }))
+    await screen.findByRole('button', { name: 'Try again' })
+
+    setNavigatorOnline(true)
+    const fetchMock = mockFetchDeferred()
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(screen.getByRole('status', { name: 'Loading breeds' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Affenpinscher' })).not.toBeInTheDocument()
+
+    fetchMock.respond(createBreedsResponse({ page: 2 }))
+    expect(await screen.findByText(/Showing 25–26 of 283 breeds/)).toBeInTheDocument()
   })
 
   it('Wi-Fi off while the browser still says "online" (VPN / virtual adapters): the failed request marks the app Offline, a successful Retry marks it Online', async () => {

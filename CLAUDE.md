@@ -95,7 +95,7 @@ Two consequences of these rules:
 - State and actions hold plain serializable data. Errors are `ApiError` objects, never class instances.
 - Only the latest request may update the state. Each `pending` stores its `requestId`, and `fulfilled` / `rejected` from an older request are ignored.
 - The thunk's `condition` skips a request when the same page is already in flight (`currentRequestId !== null`).
-- After a failed request, breeds stay on screen only if they belong to the page in the URL.
+- While loading and after a failed request, breeds stay on screen only if they belong to the page in the URL.
 - Components read state through named selectors in `xSelectors.ts`. A tiny slice may keep its one selector in the slice file (`selectIsOnline`).
 
 ### 3.5 Async calls and errors
@@ -169,6 +169,7 @@ Two consequences of these rules:
 | 9 | Real Wi-Fi test on the developer's machine | Chip stayed Online: *Radmin VPN* and *Tailscale* adapters keep `navigator.onLine` true. Fixed: API results drive the status |
 | 10 | Race condition / UX review of auto retry | No data races. A 10 s background retry made the warning flicker, so it was fixed, then **removed** in step 11 |
 | 11 | Final review for bloat | Auto-retry timer removed (option B), dead code removed, tests moved to `tests/` (3 files), this file shortened |
+| 12 | Review prep after the push | One UX edge found: "Try again" on a never-loaded page briefly showed the old page's cards. Fixed with one rule for loading and failed states, tests first (§4.3) |
 
 ### 4.2 Verified facts that shaped the design
 
@@ -197,6 +198,7 @@ Two consequences of these rules:
 | Tab still showed the Vite logo | Paw icon |
 | Chip stayed Online with Wi-Fi off (VPN adapters) | Listener: connection error → Offline, success → Online |
 | Dead code: `'aborted'` error kind (nothing aborts), HTTP 429 special case, 9 unneeded exports | Removed |
+| "Try again" on `?page=7` (never loaded) showed page 1's cards, dimmed, until the answer came. The "same page" check only applied to the failed state | One check (`hasRequestedPageData`) for loading and failed. States renamed `loadingNoData` / `loadingWithData` to match `errorNoData` / `errorWithData`. Pagination stays visible while loading |
 
 ### 4.4 Tried and reverted
 

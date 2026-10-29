@@ -41,6 +41,15 @@ export function mockFetchNetworkFailure() {
   return mockFetch().mockRejectedValue(new TypeError('Failed to fetch'))
 }
 
+/** fetch stays pending until `respond(body)` is called, to check what is shown while loading. */
+export function mockFetchDeferred() {
+  let resolveFetch: (response: Response) => void = () => {}
+  mockFetch().mockImplementation(
+    () => new Promise<Response>((resolve) => (resolveFetch = resolve)),
+  )
+  return { respond: (body: unknown) => resolveFetch(jsonResponse(body)) }
+}
+
 /** Spying on fetch again returns the same spy, so clear the calls recorded before. */
 function mockFetch() {
   return vi.spyOn(globalThis, 'fetch').mockClear()

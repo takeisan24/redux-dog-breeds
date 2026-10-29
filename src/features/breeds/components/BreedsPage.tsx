@@ -58,7 +58,7 @@ export function BreedsPage() {
 
   return (
     <Container component="main" maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
-      {viewState === 'initialLoading' && <BreedGridSkeleton />}
+      {viewState === 'loadingNoData' && <BreedGridSkeleton />}
 
       {viewState === 'errorNoData' && errorContent && (
         <StatusMessage
@@ -94,7 +94,7 @@ export function BreedsPage() {
         />
       )}
 
-      {(viewState === 'ready' || viewState === 'refreshing' || viewState === 'errorWithData') && (
+      {(viewState === 'ready' || viewState === 'loadingWithData' || viewState === 'errorWithData') && (
         <>
           {viewState === 'errorWithData' && errorContent && (
             <Alert
@@ -118,11 +118,12 @@ export function BreedsPage() {
               lastSuccessAt={lastSuccessAt}
             />
           )}
-          <BreedGrid breeds={breeds} isDimmed={viewState === 'refreshing'} />
+          <BreedGrid breeds={breeds} isDimmed={viewState === 'loadingWithData'} />
         </>
       )}
 
-      {pagination && viewState !== 'initialLoading' && (
+      {/* Stays in place (disabled) while another page loads, so it does not jump */}
+      {pagination && (
         <BreedsPagination
           page={page}
           pageCount={pagination.lastPage}

@@ -1,11 +1,12 @@
 /**
- * Redux layer for breeds: mapper (raw API → Breed), reducers (pending / fulfilled / rejected)
- * and the fetchBreeds thunk (duplicate and out-of-order requests).
+ * Redux layer for breeds: mapper (raw API → Breed), reducers (pending / fulfilled / rejected),
+ * the view state selector and the fetchBreeds thunk (duplicate and out-of-order requests).
  */
 import { describe, expect, it } from 'vitest'
 import type { ApiError } from '@/api/apiError'
 import { setupStore } from '@/app/store'
 import { mapBreedsResponse } from '@/features/breeds/breedMapper'
+import { selectBreedsViewState } from '@/features/breeds/breedsSelectors'
 import { breedsReducer, type BreedsState } from '@/features/breeds/breedsSlice'
 import { fetchBreeds } from '@/features/breeds/breedsThunks'
 import { createBreedsResponse } from './support/fixtures'
@@ -47,17 +48,23 @@ describe('breedMapper', () => {
   })
 })
 
+const initialState = breedsReducer(undefined, { type: '@@INIT' })
+const page1 = { ...mapBreedsResponse(createBreedsResponse({ page: 1 }), 24), fetchedAt: 1_000 }
+const offlineError: ApiError = { kind: 'offline', message: 'Failed to fetch' }
+
+/** State after page 1 was loaded successfully. */
+function loadedState(): BreedsState {
+  const pending = breedsReducer(initialState, fetchBreeds.pending('request-1', { page: 1 }))
+  return breedsReducer(pending, fetchBreeds.fulfilled(page1, 'request-1', { page: 1 }))
+}
+
+/** Page 1 is on screen, then a request for `page` fails. */
+function failedState(page: number): BreedsState {
+  const pending = breedsReducer(loadedState(), fetchBreeds.pending('request-2', { page }))
+  return breedsReducer(pending, fetchBreeds.rejected(null, 'request-2', { page }, offlineError))
+}
+
 describe('breedsSlice', () => {
-  const initialState = breedsReducer(undefined, { type: '@@INIT' })
-  const page1 = { ...mapBreedsResponse(createBreedsResponse({ page: 1 }), 24), fetchedAt: 1_000 }
-  const offlineError: ApiError = { kind: 'offline', message: 'Failed to fetch' }
-
-  /** State after page 1 was loaded successfully. */
-  function loadedState(): BreedsState {
-    const pending = breedsReducer(initialState, fetchBreeds.pending('request-1', { page: 1 }))
-    return breedsReducer(pending, fetchBreeds.fulfilled(page1, 'request-1', { page: 1 }))
-  }
-
   it('pending: marks the request as loading and remembers the requested page', () => {
     const state = breedsReducer(initialState, fetchBreeds.pending('request-1', { page: 3 }))
 
@@ -76,11 +83,7 @@ describe('breedsSlice', () => {
   })
 
   it('rejected: stores the error but KEEPS the breeds that were already loaded', () => {
-    const pending = breedsReducer(loadedState(), fetchBreeds.pending('request-2', { page: 1 }))
-    const state = breedsReducer(
-      pending,
-      fetchBreeds.rejected(null, 'request-2', { page: 1 }, offlineError),
-    )
+    const state = failedState(1)
 
     expect(state.status).toBe('failed')
     expect(state.error).toEqual(offlineError)
@@ -103,6 +106,34 @@ describe('breedsSlice', () => {
     expect(next).not.toBe(previous)
     expect(previous.status).toBe('succeeded')
     expect(previous.requestedPage).toBe(1)
+  })
+})
+
+describe('selectBreedsViewState', () => {
+  const viewStateOf = (breeds: BreedsState) =>
+    selectBreedsViewState({ breeds, network: { isOnline: true } })
+
+  it('reloading the page on screen: keeps its cards (dimmed)', () => {
+    const state = breedsReducer(loadedState(), fetchBreeds.pending('request-2', { page: 1 }))
+
+    expect(viewStateOf(state)).toBe('loadingWithData')
+  })
+
+  it('loading another page: skeleton, not the cards of the old page', () => {
+    const state = breedsReducer(loadedState(), fetchBreeds.pending('request-2', { page: 2 }))
+
+    expect(viewStateOf(state)).toBe('loadingNoData')
+  })
+
+  it('retrying a page that failed and was never loaded: skeleton, not the cards of the old page', () => {
+    const state = breedsReducer(failedState(7), fetchBreeds.pending('request-3', { page: 7 }))
+
+    expect(viewStateOf(state)).toBe('loadingNoData')
+  })
+
+  it('failed: keeps the cards only if they are the page that failed', () => {
+    expect(viewStateOf(failedState(1))).toBe('errorWithData')
+    expect(viewStateOf(failedState(7))).toBe('errorNoData')
   })
 })
 
