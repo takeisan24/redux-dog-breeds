@@ -202,8 +202,9 @@ Two consequences of these rules:
 
 - **10 s background retry.** Added so the app recovers on machines where no `online` event fires. It needed a background-retry flag in the thunk and the reducer, plus a timer in `BreedsPage`. The exam does not ask for it, so it was removed. Recovery is now Retry / Reload, or automatic on the browser's `online` event.
 
-### 4.5 Next steps (waiting for the developer)
+### 4.5 Next steps
 
-- [ ] Commit (rename the branch to `main`, then make logical commits).
-- [ ] Create the GitHub repository and push.
-- [ ] Draft the answer for the exam form.
+- [x] Commit: branch renamed to `main`, 3 commits (app → tests → docs). Each one builds on its own.
+- [x] Create the GitHub repository and push: <https://github.com/takeisan24/redux-dog-breeds> (public). A fresh clone passes `npm ci`, lint, the 26 tests and the build.
+- [x] Draft the answer for the exam form (repo link + how requirements 1 and 2 are handled).
+- [ ] Submit the form (developer).
