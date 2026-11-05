@@ -92,7 +92,7 @@ export function BreedsPage() {
         />
       )}
 
-      {viewState === 'empty' && (
+      {viewState === 'empty' && page > 1 && (
         <StatusMessage
           icon={<SearchOffIcon />}
           title={`Page ${page} has no breeds`}
@@ -100,6 +100,20 @@ export function BreedsPage() {
           actions={
             <Button variant="contained" onClick={() => handlePageChange(1)}>
               Go to first page
+            </Button>
+          }
+        />
+      )}
+
+      {/* Page 1 empty = the API returned no breeds at all. A link to page 1 would do nothing here */}
+      {viewState === 'empty' && page === 1 && (
+        <StatusMessage
+          icon={<SearchOffIcon />}
+          title="No breeds available"
+          description="Dog API returned no breeds. Please try again later."
+          actions={
+            <Button variant="contained" onClick={handleRetry}>
+              Try again
             </Button>
           }
         />

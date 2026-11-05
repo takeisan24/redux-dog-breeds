@@ -37,12 +37,14 @@ export function createDogApiBreed(name: string): DogApiBreed {
 export function createBreedsResponse({
   page = 1,
   names = ['Affenpinscher', 'Akita'],
-  last = 12 as number | undefined,
+  // null = leave `last` out, as the API does on the last page. Not `undefined`: a default
+  // parameter replaces `undefined`, so `last: undefined` would silently become 12.
+  last = 12 as number | null,
   records = 283,
 } = {}): DogApiBreedsResponse {
   return {
     data: names.map(createDogApiBreed),
     included: [{ id: 'group-toy', type: 'group', attributes: { name: 'Toy Group' } }],
-    meta: { pagination: { current: page, last, records } },
+    meta: { pagination: { current: page, last: last ?? undefined, records } },
   }
 }

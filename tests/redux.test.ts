@@ -42,7 +42,7 @@ describe('breedMapper', () => {
   })
 
   it('computes the last page when the API leaves `last` out (it does on the last page)', () => {
-    const response = createBreedsResponse({ page: 12, last: undefined, records: 283 })
+    const response = createBreedsResponse({ page: 12, last: null, records: 283 })
 
     expect(mapBreedsResponse(response, 24).pagination.lastPage).toBe(12) // ceil(283 / 24)
   })

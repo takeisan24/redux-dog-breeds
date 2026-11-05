@@ -106,6 +106,34 @@ describe('Requirement 1: online, call the API and show each breed', () => {
     await waitFor(() => expect(reloadButton).toBeEnabled())
     expect(within(reloadButton).queryByRole('progressbar')).not.toBeInTheDocument()
   })
+
+  it('a page past the end (the API answers 200 with no breeds) says so and links back to page 1', async () => {
+    window.history.replaceState(null, '', '/?page=99')
+    mockFetchSuccess(createBreedsResponse({ page: 99, names: [], last: null }))
+    const { user } = renderWithProviders(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Page 99 has no breeds' })).toBeInTheDocument()
+
+    mockFetchSuccess(createBreedsResponse())
+    await user.click(screen.getByRole('button', { name: 'Go to first page' }))
+
+    expect(await screen.findByRole('heading', { name: 'Affenpinscher' })).toBeInTheDocument()
+    expect(window.location.search).toBe('')
+  })
+
+  it('the API has no breeds at all: says so and offers "Try again", not a link to the page already open', async () => {
+    mockFetchSuccess(createBreedsResponse({ names: [], records: 0, last: null }))
+    const { user } = renderWithProviders(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'No breeds available' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Go to first page' })).not.toBeInTheDocument()
+
+    const fetchMock = mockFetchSuccess(createBreedsResponse())
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(await screen.findByRole('heading', { name: 'Affenpinscher' })).toBeInTheDocument()
+  })
 })
 
 describe('Requirement 2: disconnected, call the API again', () => {

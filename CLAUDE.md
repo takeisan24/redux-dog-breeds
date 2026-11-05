@@ -172,6 +172,7 @@ Two consequences of these rules:
 | 12 | Review prep after the push | One UX edge found: "Try again" on a never-loaded page briefly showed the old page's cards. Fixed with one rule for loading and failed states, tests first (§4.3) |
 | 13 | UI / UX review (UI, usability, user journey, emotion) | Strong on errors and recovery, weak on discovery (no search, no detail view: left out of scope). Quick wins done: consistent offline text, less noise, sentence-case buttons (§4.3) |
 | 14 | Team front-end checklist (14 items) checked against the app | 3 applied, tests first (§4.3): focus after page change, spinner in Reload, whole photo shown. Already met: pointer cursor, loading bar, responsive, reusable components. Not applicable (no form, search, email, OTP, drag and drop): left out |
+| 15 | Demo prep: status codes and empty responses | Real calls: 200, 304 on Reload (`no-cache` + ETag), 200 with `data: []` past the last page, 404 not thrown by `fetch`, no status at all offline. Empty state had no test, and page 1 empty was wrong (§4.3) |
 
 ### 4.2 Verified facts that shaped the design
 
@@ -208,6 +209,8 @@ Two consequences of these rules:
 | After a page change, focus stayed on the pagination button, which is disabled while loading, so it fell to `<body>` | `BreedsPage` focuses `<main>` (`tabIndex={-1}`) and scrolls to the top |
 | Reload button only turned gray while waiting for the API | `loading` prop: spinner in the button |
 | Photos range from 2:3 to 3:2; `object-fit: cover` in the 4:3 frame cut portrait dogs in half | `contain` on the gray `action.hover` background |
+| API with no breeds at all: page 1 said "This page doesn't exist" and its "Go to first page" button did nothing (already on page 1) | Page 1 empty: "No breeds available" + "Try again". Pages past the end keep the link to page 1 |
+| Fixture `last = 12` default turned `last: undefined` into 12, so the "API leaves `last` out" test never left it out | `last: null` means "omit" |
 
 ### 4.4 Tried and reverted
 
