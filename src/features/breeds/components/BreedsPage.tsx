@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import Button from '@mui/material/Button'
@@ -32,6 +32,7 @@ import { formatTime } from '@/utils/formatters'
 export function BreedsPage() {
   const dispatch = useAppDispatch()
   const [page, changePage] = usePageFromUrl()
+  const mainRef = useRef<HTMLElement>(null)
 
   const viewState = useAppSelector(selectBreedsViewState)
   const breeds = useAppSelector(selectBreeds)
@@ -51,13 +52,23 @@ export function BreedsPage() {
     // MUI also fires onChange for the page that is already selected
     if (nextPage === page) return
     changePage(nextPage)
+    // The clicked pagination button is disabled while the page loads, so focus would fall back to
+    // <body>. Moving it to <main> lets keyboard and screen reader users start reading the new page.
+    mainRef.current?.focus({ preventScroll: true })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const errorContent = error ? getApiErrorContent(error) : null
 
   return (
-    <Container component="main" maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+    <Container
+      component="main"
+      ref={mainRef}
+      // -1: focusable from code, but not a Tab stop. No focus ring: <main> is not a control.
+      tabIndex={-1}
+      maxWidth="lg"
+      sx={{ py: { xs: 2, sm: 4 }, outline: 'none' }}
+    >
       {viewState === 'loadingNoData' && <BreedGridSkeleton />}
 
       {viewState === 'errorNoData' && errorContent && (

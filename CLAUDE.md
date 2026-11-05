@@ -171,6 +171,7 @@ Two consequences of these rules:
 | 11 | Final review for bloat | Auto-retry timer removed (option B), dead code removed, tests moved to `tests/` (3 files), this file shortened |
 | 12 | Review prep after the push | One UX edge found: "Try again" on a never-loaded page briefly showed the old page's cards. Fixed with one rule for loading and failed states, tests first (§4.3) |
 | 13 | UI / UX review (UI, usability, user journey, emotion) | Strong on errors and recovery, weak on discovery (no search, no detail view: left out of scope). Quick wins done: consistent offline text, less noise, sentence-case buttons (§4.3) |
+| 14 | Team front-end checklist (14 items) checked against the app | 3 applied, tests first (§4.3): focus after page change, spinner in Reload, whole photo shown. Already met: pointer cursor, loading bar, responsive, reusable components. Not applicable (no form, search, email, OTP, drag and drop): left out |
 
 ### 4.2 Verified facts that shaped the design
 
@@ -204,6 +205,9 @@ Two consequences of these rules:
 | Photo credit shown over an empty frame while the photo was loading or failing | Credit appears after `onLoad` |
 | Noise: "Online" chip always shown, "Not hypoallergenic" on most cards, the load time shown twice | Chip only when offline (its `role="status"` box stays mounted so the change is announced), only the positive chip, time only in the warning |
 | Buttons in UPPERCASE (MUI default), unclear "System" theme icon | `textTransform: 'none'` in the theme, `BrightnessAuto` icon |
+| After a page change, focus stayed on the pagination button, which is disabled while loading, so it fell to `<body>` | `BreedsPage` focuses `<main>` (`tabIndex={-1}`) and scrolls to the top |
+| Reload button only turned gray while waiting for the API | `loading` prop: spinner in the button |
+| Photos range from 2:3 to 3:2; `object-fit: cover` in the 4:3 frame cut portrait dogs in half | `contain` on the gray `action.hover` background |
 
 ### 4.4 Tried and reverted
 

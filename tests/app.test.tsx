@@ -3,7 +3,7 @@
  * 1. Online: call the API and show information for each breed.
  * 2. Offline: call the API again and handle the failure.
  */
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { App } from '@/App'
 import { createBreedsResponse } from './support/fixtures'
@@ -78,6 +78,33 @@ describe('Requirement 1: online, call the API and show each breed', () => {
 
     expect(window.history.length).toBe(historyLength)
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('changing page moves the keyboard focus to the top of the page, not the disabled pagination', async () => {
+    mockFetchSuccess(createBreedsResponse())
+    const { user } = renderWithProviders(<App />)
+    await screen.findByRole('heading', { name: 'Affenpinscher' })
+
+    await user.click(screen.getByRole('button', { name: 'Go to page 2' }))
+
+    expect(screen.getByRole('main')).toHaveFocus()
+  })
+
+  it('the Reload button shows a spinner and cannot be clicked again while the API is answering', async () => {
+    mockFetchSuccess(createBreedsResponse())
+    const { user } = renderWithProviders(<App />)
+    await screen.findByRole('heading', { name: 'Affenpinscher' })
+
+    const fetchMock = mockFetchDeferred()
+    await user.click(screen.getByRole('button', { name: 'Reload breeds' }))
+
+    const reloadButton = screen.getByRole('button', { name: 'Reload breeds' })
+    expect(reloadButton).toBeDisabled()
+    expect(within(reloadButton).getByRole('progressbar')).toBeInTheDocument()
+
+    fetchMock.respond(createBreedsResponse())
+    await waitFor(() => expect(reloadButton).toBeEnabled())
+    expect(within(reloadButton).queryByRole('progressbar')).not.toBeInTheDocument()
   })
 })
 

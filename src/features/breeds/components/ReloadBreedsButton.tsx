@@ -18,7 +18,8 @@ export function ReloadBreedsButton() {
         <IconButton
           color="inherit"
           aria-label="Reload breeds"
-          disabled={isLoading}
+          // Spinner in the button that was pressed while waiting for the API (also disables it)
+          loading={isLoading}
           onClick={() => dispatch(fetchBreeds({ page }))}
         >
           <RefreshIcon />

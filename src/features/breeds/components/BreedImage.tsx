@@ -51,7 +51,9 @@ export function BreedImage({ photo, breedName }: BreedImageProps) {
         decoding="async"
         onLoad={() => setLoadedPhoto(photo)}
         onError={() => setFailedPhoto(photo)}
-        sx={{ ...imageFrameSx, display: 'block', objectFit: 'cover', bgcolor: 'action.hover' }}
+        // Photos range from portrait (2:3) to landscape (3:2). `contain` shows the whole dog
+        // instead of cropping it; the gray background fills the sides the photo does not cover.
+        sx={{ ...imageFrameSx, display: 'block', objectFit: 'contain', bgcolor: 'action.hover' }}
       />
       {isLoaded && photo.author && (
         <Typography
