@@ -48,6 +48,14 @@ export function toApiError(error: unknown): ApiError {
   return { kind: 'unknown', message: error instanceof Error ? error.message : String(error) }
 }
 
+/**
+ * 5xx (server problem) and 429 (too many requests) can pass if the user tries again later.
+ * Other 4xx mean the request itself was refused, so trying again sends the same refused request.
+ */
+function isTemporaryHttpError(status: number | undefined): boolean {
+  return status === undefined || status === 429 || status >= 500
+}
+
 interface ApiErrorContent {
   title: string
   description: string
@@ -76,10 +84,16 @@ export function getApiErrorContent(error: ApiError): ApiErrorContent {
         description: 'Dog API is taking too long to respond. Please try again.',
       }
     case 'http':
-      return {
-        title: `Dog API error (${error.status ?? 'unknown status'})`,
-        description: 'The server returned an error. Please try again later.',
-      }
+      return isTemporaryHttpError(error.status)
+        ? {
+            title: `Dog API is unavailable (${error.status ?? 'unknown status'})`,
+            description: 'The server is having problems. Please try again in a moment.',
+          }
+        : {
+            title: `Request rejected (${error.status})`,
+            description:
+              'Dog API refused the request. If this keeps happening, the app may need an update.',
+          }
     case 'invalid-response':
       return {
         title: 'Unexpected response',

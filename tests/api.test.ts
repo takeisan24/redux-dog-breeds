@@ -1,7 +1,9 @@
 /**
- * API layer: how `getJson` (src/api/httpClient.ts) turns every kind of failure into an error `kind`.
+ * API layer: how `getJson` (src/api/httpClient.ts) turns every kind of failure into an error `kind`,
+ * and which message the user sees for it (src/api/apiError.ts).
  */
 import { describe, expect, it, vi } from 'vitest'
+import { getApiErrorContent } from '@/api/apiError'
 import { getJson } from '@/api/httpClient'
 import { jsonResponse, mockFetchNetworkFailure, setNavigatorOnline } from './support/helpers'
 
@@ -62,5 +64,24 @@ describe('getJson', () => {
     )
 
     await expect(getJson(URL, { timeoutMs: 20 })).rejects.toMatchObject({ kind: 'timeout' })
+  })
+})
+
+describe('getApiErrorContent: HTTP errors', () => {
+  const contentFor = (status: number) =>
+    getApiErrorContent({ kind: 'http', message: `Request failed with status ${status}`, status })
+
+  it.each([500, 503, 429])('%i is temporary: the server has a problem, trying again later can work', (status) => {
+    expect(contentFor(status)).toEqual({
+      title: `Dog API is unavailable (${status})`,
+      description: 'The server is having problems. Please try again in a moment.',
+    })
+  })
+
+  it.each([400, 404])('%i is a rejected request: trying again will not fix it', (status) => {
+    expect(contentFor(status)).toEqual({
+      title: `Request rejected (${status})`,
+      description: 'Dog API refused the request. If this keeps happening, the app may need an update.',
+    })
   })
 })

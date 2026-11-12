@@ -4,10 +4,11 @@
  * 2. Offline: call the API again and handle the failure.
  */
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { App } from '@/App'
 import { createBreedsResponse } from './support/fixtures'
 import {
+  jsonResponse,
   mockFetchDeferred,
   mockFetchNetworkFailure,
   mockFetchSuccess,
@@ -217,6 +218,20 @@ describe('Requirement 2: disconnected, call the API again', () => {
 
     expect(await screen.findByRole('heading', { name: 'Affenpinscher' })).toBeInTheDocument()
     expect(screen.queryByText('Offline')).not.toBeInTheDocument()
+  })
+
+  it('the server answers 503: shows it is a server problem, not Offline, and "Try again" recovers', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => jsonResponse({ errors: [] }, 503))
+    const { user } = renderWithProviders(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Dog API is unavailable (503)' })).toBeInTheDocument()
+    // The server answered, so the connection works: no Offline chip
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument()
+
+    mockFetchSuccess(createBreedsResponse())
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(await screen.findByRole('heading', { name: 'Affenpinscher' })).toBeInTheDocument()
   })
 
   it('retries automatically when the browser reports that the connection is back', async () => {

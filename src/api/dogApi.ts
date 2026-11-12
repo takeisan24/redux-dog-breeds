@@ -22,4 +22,6 @@ export function getBreeds(
     include: 'group',
   })
   return getJson<DogApiBreedsResponse>(`${DOG_API_BASE_URL}/breeds?${params}`, options)
+  // DEMO ONLY: keep the real request, but pretend the API has no breeds
+  // .then((response) => ({ ...response, data: [], meta: { pagination: { current: page, records: 0 } } }))
 }
